@@ -1,2 +1,3 @@
-# prng
-Code for the PRNG 
+# Random Number Generator
+
+This project 
