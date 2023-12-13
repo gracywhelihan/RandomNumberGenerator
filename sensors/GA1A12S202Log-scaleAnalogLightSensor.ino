@@ -119,7 +119,7 @@ void loop() {
 
     // store the data object as a sting in the variable body
     String body = "{\"light\": ll}";
-    //replace the ll, hh characters in the sting with the ll value as strings from the sensor
+    //replace the ll characters in the sting with the ll value as strings from the sensor
     body.replace("ll", String(ll));
 
     // prints the content of the message
