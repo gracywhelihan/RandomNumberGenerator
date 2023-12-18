@@ -1,3 +1,3 @@
 # Random Number Generator
 
-This project 
+Source code for the sensors that contribute to the random number generator.
