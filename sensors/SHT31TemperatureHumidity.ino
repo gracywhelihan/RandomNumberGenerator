@@ -1,56 +1,54 @@
 /*
-  MQTT Client sender
-  This sketch demonstrates an MQTT client that connects to a broker, subsrcibes to a topic,
-  sends messages to it, reading from a SHT31 Temperature & Humidity sensor.
-  This sketch uses https://test.mosquitto.org as the MQTT broker.
-  This sketch uses an Arduino Nano 33 IoT.
-  
+  This code demonstrates an MQTT arduino client that connects to a broker, subsrcibes to a topic,
+  and sends data from SHT31 Temperature and Humidity sensor.
+  This code uses https://randomnumbergenerator.cloud.shiftr.io/ as the MQTT broker.
+  To get the broker username and password please email vgw3869@nyu.edu
   the arduino_secrets.h file:
-  #define SECRET_SSID ""    // wifi network name
-  #define SECRET_PASS ""    // wifi network password
+  #define SECRET_SSID ""    // network name
+  #define SECRET_PASS ""    // network password
   #define SECRET_MQTT_USER "public" // broker username
   #define SECRET_MQTT_PASS "public" // broker password
-  created April 2023
-  modified from code by Tom Igoe
-  by Gracy Whelihan
+
+  created 5 March 2024
+  Sourse code modified from code written by Tom Igoe https://github.com/tigoe/mqtt-examples/blob/main/arduino-clients/ArduinoMqttClient/ArduinoMqttClient.ino
 */
 
-// inclued wifi and MQTT libraries
+// include libraries
 #include <WiFiNINA.h>
 #include <ArduinoMqttClient.h>
-
-// include Wire Library for I2C communication with sensor
 #include <Wire.h>
-
-// include SHT31 Temperature & Humidity sensor library
+// include the SHT31 temperature and humidity library
 #include "Adafruit_SHT31.h"
-//include secrets.h - has the username a password info for the network and broker
+// include the secrets file with the wifi name and password and the broker name and passwork
 #include "secrets.h"
 
-// initialize the sht31 sensor 
+// initialze the SHT31 sensor
 Adafruit_SHT31 sht31 = Adafruit_SHT31();
 
-// initialize SSL WiFi connection:
-WiFiSSLClient wifi;
-//connects the Wi-Fi client to the MQTT client.
+// initialize the pin for the LED that indicates that arduino is connected to wifi
+int wifiConnectedLED = 2;
+// initialize the pin for the LED that indicates that arduino is connected to broker
+int mqttConnectedLED = 3;
+
+// initialize WiFi connection:
+WiFiSSLClient wifi; // secure wifi client
+// WiFiClient wifi; // unsecure wifi client
 MqttClient mqttClient(wifi);
 
 // details for MQTT client:
-// broker name
-char broker[] = "test.mosquitto.org";
+char broker[] = "randomnumbergenerator.cloud.shiftr.io";
 
-// choose a port to communicate on
-int port = 8886; // for test.mosquitto.org
-// choose a topic to subscribe to - topic/subtopic
-char topic[] = "randomNumberGenerator/tempHum";
-// This should be a unique ID 
-String clientID = "GW3869";
+//int port = 1883; // unsecure port for shiftr
+int port = 8883; // secure port for shiftr
+// Always send sensor data through the incomingSensorData topic
+char topic[] = "incomingSensorData";
+// This part of the client id can be what ever you want
+// Later on in set up the last 3 digits of MAC Address are added to insure a unique client ID
+String clientID = "gwSHT31TempHumClient-";
 
 // last time the client sent a message, in ms:
 long lastTimeSent = 0;
 // message sending interval:
-// how often data is being sent to the broker
-// sending data once a second is fine here
 int interval = 1000;
 
 
@@ -65,44 +63,55 @@ void setup() {
   while (WiFi.status() != WL_CONNECTED) {
     Serial.print("Connecting to ");
     Serial.println(SECRET_SSID);
-    //connects to local Wi-Fi network using the network name and password in the secrets.h file
     WiFi.begin(SECRET_SSID, SECRET_PASS);
     delay(2000);
   }
 
-  // print IP address once connected:
-  Serial.print("Connected. My IP address: ");
-  Serial.println(WiFi.localIP());
+  // print when connected to wifi
+  digitalWrite(wifiConnectedLED, HIGH); 
+  Serial.println("Connected to wifi.");
 
+  // make the clientID unique by adding the last three digits of the MAC address:
+  byte mac[6];
+  WiFi.macAddress(mac);
+  for (int i = 0; i < 3; i++) {
+    clientID += String(mac[i], HEX);
+  }
+  // set the credentials for the MQTT client:
+  mqttClient.setId(clientID);
+  // login to the broker with a username and password for randomnumbergenerator.cloud.shiftr.io:
+  mqttClient.setUsernamePassword(SECRET_MQTT_USER, SECRET_MQTT_PASS);
 
   // set the credentials for the MQTT client:
     mqttClient.setId(clientID);
-  // test.mosquitto.org doesn't require a username and password
-  // include if using a another broker
   // login to the broker with a username and password:
-  //  mqttClient.setUsernamePassword(SECRET_MQTT_USER, SECRET_MQTT_PASS);
+    mqttClient.setUsernamePassword(SECRET_MQTT_USER, SECRET_MQTT_PASS);
 
   // try to connect to the MQTT broker once you're connected to WiFi:
   while (!connectToBroker()) {
     Serial.println("attempting to connect to broker");
     delay(1000);
   }
+  Serial.println("Connected to randomnumbergenerator broker.");
 
-  Serial.println("connected to broker");
-
-  // initialize the SHT31 temperature and humidity sensor sensor
+  // initialize the SHT31 sensor
    if (! sht31.begin(SHT31_DEFAULT_ADDR)) {
     Serial.println("Couldn't find SHT31");
     while (1) { delay(1); }       // wait forever
   }
 }
 
-
 void loop() {
-
+  // if not connected to wifi, try again
+  if (WiFi.status() != WL_CONNECTED) {
+    digitalWrite(wifiConnectedLED, HIGH); 
+    WiFi.begin(SECRET_SSID, SECRET_PASS);
+    delay(2000);
+  }
   
   // if not connected to the broker, try to connect:
   if (!mqttClient.connected()) {
+    digitalWrite(mqttConnectedLED, LOW); 
     Serial.println("reconnecting");
     connectToBroker();
   }
@@ -111,21 +120,20 @@ void loop() {
   if (millis() - lastTimeSent > interval) {
     // start a new message on the topic:
     mqttClient.beginMessage(topic);
-    // get the temperature and humidity readings from the sensor and store them in the variables tt, hh
+    // add a random number as a numeric string (print(), not write()):
     float tt = sht31.readTemperature();
     float hh = sht31.readHumidity();
 
-    // store the data object as a sting in the variable body
-    String body = "{\"temp\": tt, \"hum\": hh}";
-    //replace the tt, hh characters in the sting with the tt, hh values as strings from the sensors
-    body.replace("tt", String(tt));
-    body.replace("hh", String(hh));
 
-    // prints the content of the message
+  String body = "{\"temp\": tt, \"hum\": hh}";
+  //String body = "{\"sound\": ss, \"time\": dd}";
+   body.replace("tt", String(tt));
+   body.replace("hh", String(hh));
+
     mqttClient.println(body);
-    // send the message to the broker
+//    Serial.println(body);
+    // send the message:
     mqttClient.endMessage();
-    // update the lastTimeSent
     lastTimeSent = millis();
   }
 
@@ -142,5 +150,6 @@ boolean connectToBroker() {
   }
   // once you're connected, you
   // return that you're connected:
+  digitalWrite(mqttConnectedLED, HIGH);    // turn on the yellow LED 
   return true;
 }
