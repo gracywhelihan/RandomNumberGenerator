@@ -9,3 +9,7 @@ Currently the algorithm code is being hosted [here](https://5695152282714844.gli
 If you would like to contribute your own sensor data, use the random numbers generated in your own project, and/or have ideas for improving the algorithm please email <vgw3869@nyu.edu>. 
 
 Thanks!
+
+## Special Thanks to:
+Tom Igoe
+Sharon De La Cruz
