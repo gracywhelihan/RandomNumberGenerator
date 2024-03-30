@@ -12,4 +12,7 @@ Thanks!
 
 ## Special Thanks to:
 Tom Igoe
+
 Sharon De La Cruz
+
+ITP Class of 2024
