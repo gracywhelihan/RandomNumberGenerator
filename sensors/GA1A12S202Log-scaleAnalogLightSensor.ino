@@ -27,11 +27,6 @@ int lightPin = A0;
 float rawRange = 1024; // 3.3v
 float logRange = 5.0; // 3.3v = 10^5 lux
 
-// initialize the pin for the LED that indicates that arduino is connected to wifi
-int wifiConnectedLED = 2;
-// initialize the pin for the LED that indicates that arduino is connected to broker
-int mqttConnectedLED = 3;
-
 // initialize WiFi connection:
 WiFiSSLClient wifi; // secure wifi client
 // WiFiClient wifi; // unsecure wifi client
@@ -58,6 +53,10 @@ void setup() {
   // initialize serial:
   Serial.begin(9600);
   
+  pinMode(LED_BUILTIN, OUTPUT);
+  //turn the built in LED on arduino on 
+  digitalWrite(LED_BUILTIN, HIGH);
+
   // wait for serial monitor to open:
   if (!Serial) delay(3000);
 
@@ -70,7 +69,6 @@ void setup() {
   }
 
   // print when connected to wifi
-  digitalWrite(wifiConnectedLED, HIGH); 
   Serial.println("Connected to wifi.");
 
   // make the clientID unique by adding the last three digits of the MAC address:
@@ -101,14 +99,14 @@ void setup() {
 void loop() {
   // if not connected to wifi, try again
   if (WiFi.status() != WL_CONNECTED) {
-    digitalWrite(wifiConnectedLED, HIGH); 
+    digitalWrite(LED_BUILTIN, HIGH); 
     WiFi.begin(SECRET_SSID, SECRET_PASS);
     delay(2000);
   }
   
   // if not connected to the broker, try to connect:
   if (!mqttClient.connected()) {
-    digitalWrite(mqttConnectedLED, LOW); 
+    digitalWrite(LED_BUILTIN, HIGH); 
     Serial.println("reconnecting");
     connectToBroker();
   }
@@ -133,6 +131,8 @@ void loop() {
     // send the message:
     mqttClient.endMessage();
     lastTimeSent = millis();
+    digitalWrite(LED_BUILTIN, LOW);
+
   }
 
 }

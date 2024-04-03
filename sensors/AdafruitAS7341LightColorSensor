@@ -1,6 +1,6 @@
 /*
   This code demonstrates an MQTT arduino client that connects to a broker, subsrcibes to a topic,
-  and sends data from a KY-030 Micorphone Sound sensor.
+  and sends data from GA1A12S202 Log-scale Analog Light Sensor.
   This code uses https://randomnumbergenerator.cloud.shiftr.io/ as the MQTT broker.
   To get the broker username and password please email vgw3869@nyu.edu
   the arduino_secrets.h file:
@@ -13,19 +13,16 @@
   Sourse code modified from code written by Tom Igoe https://github.com/tigoe/mqtt-examples/blob/main/arduino-clients/ArduinoMqttClient/ArduinoMqttClient.ino
 */
 
-
 // include libraries
 #include <WiFiNINA.h>
 #include <ArduinoMqttClient.h>
 #include <Wire.h>
+#include <Adafruit_AS7341.h>
 
 // include the secrets file with the wifi name and password and the broker name and passwork
 #include "secrets.h"
 
-
-//initialize sound sensor pins
-int soundPin = A0;  
-int sensorValue = 0;
+Adafruit_AS7341 as7341;
 
 // initialize WiFi connection:
 WiFiSSLClient wifi; // secure wifi client
@@ -41,13 +38,14 @@ int port = 8883; // secure port for shiftr
 char topic[] = "incomingSensorData";
 // This part of the client id can be what ever you want
 // Later on in set up the last 3 digits of MAC Address are added to insure a unique client ID
-String clientID = "gwKY-030MicSoundSensorClient-";
+String clientID = "gwAdafruitAS7341LightColorSensorClient-";
 
 // last time the client sent a message, in ms:
 long lastTimeSent = 0;
 // message sending interval:
 int interval = 1000;
 
+int colorChannel = 1;
 
 void setup() {
   // initialize serial:
@@ -57,7 +55,6 @@ void setup() {
   pinMode(LED_BUILTIN, OUTPUT);
   //turn the built in LED on arduino on 
   digitalWrite(LED_BUILTIN, HIGH);
-  
   // wait for serial monitor to open:
   if (!Serial) delay(3000);
 
@@ -70,7 +67,6 @@ void setup() {
   }
 
   // print when connected to wifi
-  digitalWrite(wifiConnectedLED, HIGH); 
   Serial.println("Connected to wifi.");
 
   // make the clientID unique by adding the last three digits of the MAC address:
@@ -96,41 +92,84 @@ void setup() {
   }
   Serial.println("Connected to randomnumbergenerator broker.");
 
+
+   // initialize the SHT31 sensor
+   if (!as7341.begin()){
+    Serial.println("Could not find AS7341");
+    while (1) { delay(10); }
+  }
+
+  as7341.setATIME(100);
+  as7341.setASTEP(999);
+  as7341.setGain(AS7341_GAIN_256X);
 }
 
 void loop() {
+  
   // if not connected to wifi, try again
   if (WiFi.status() != WL_CONNECTED) {
-    digitalWrite(LED_BUILTIN, HIGH); 
+    digitalWrite(LED_BUILTIN, HIGH);
     WiFi.begin(SECRET_SSID, SECRET_PASS);
     delay(2000);
   }
   
   // if not connected to the broker, try to connect:
   if (!mqttClient.connected()) {
-    digitalWrite(LED_BUILTIN, HIGH); 
+    digitalWrite(LED_BUILTIN, HIGH);
     Serial.println("reconnecting");
     connectToBroker();
   }
 
+  //// Read all channels at the same time and store in as7341 object
+  if (!as7341.readAllChannels()){
+    digitalWrite(LED_BUILTIN, HIGH);
+    Serial.println("Error reading all channels!");
+    return;
+  }
+
+  
 // once every interval, send a message:
   if (millis() - lastTimeSent > interval) {
     // start a new message on the topic:
     mqttClient.beginMessage(topic);
+    float cc;
+
+    if(colorChannel == 1){
+      cc = as7341.getChannel(AS7341_CHANNEL_415nm_F1);
+    }else if(colorChannel == 2){
+      cc = as7341.getChannel(AS7341_CHANNEL_445nm_F2);
+    }else if(colorChannel == 3){
+      cc = as7341.getChannel(AS7341_CHANNEL_480nm_F3);
+    }else if(colorChannel == 4){
+      cc = as7341.getChannel(AS7341_CHANNEL_515nm_F4);
+    }else if(colorChannel == 5){
+      cc = as7341.getChannel(AS7341_CHANNEL_555nm_F5);
+    }else if(colorChannel == 6){
+      cc = as7341.getChannel(AS7341_CHANNEL_590nm_F6);
+    }else if(colorChannel == 7){
+      cc = as7341.getChannel(AS7341_CHANNEL_630nm_F7);
+    }else if(colorChannel == 8){
+      cc = as7341.getChannel(AS7341_CHANNEL_680nm_F8);
+    }else if(colorChannel == 9){
+      cc = as7341.getChannel(AS7341_CHANNEL_CLEAR);
+    }else if(colorChannel == 10){
+      cc = as7341.getChannel(AS7341_CHANNEL_NIR); 
+      colorChannel = 0;   
+    }
+
+    colorChannel++;    
+    // set up the message as a sting
+    String body = "{\"color\": cc}";
+    // replace 'll' with the value fo the sensor as a string
+   body.replace("ll", String(cc));
+
     // add a random number as a numeric string (print(), not write()):
-    float ss = analogRead(soundPin);
-
-    String body = "{\"sound\": ss}";
-
-    body.replace("ss", String(ss));
-
     mqttClient.println(body);
- 
-    digitalWrite(LED_BUILTIN, LOW);
+
     // send the message:
     mqttClient.endMessage();
     lastTimeSent = millis();
-
+    digitalWrite(LED_BUILTIN, LOW);
   }
 
 }
@@ -146,6 +185,5 @@ boolean connectToBroker() {
   }
   // once you're connected, you
   // return that you're connected:
-  digitalWrite(mqttConnectedLED, HIGH);    // turn on the yellow LED 
   return true;
 }

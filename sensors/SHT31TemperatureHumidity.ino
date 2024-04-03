@@ -25,10 +25,6 @@
 // initialze the SHT31 sensor
 Adafruit_SHT31 sht31 = Adafruit_SHT31();
 
-// initialize the pin for the LED that indicates that arduino is connected to wifi
-int wifiConnectedLED = 2;
-// initialize the pin for the LED that indicates that arduino is connected to broker
-int mqttConnectedLED = 3;
 
 // initialize WiFi connection:
 WiFiSSLClient wifi; // secure wifi client
@@ -55,6 +51,11 @@ int interval = 1000;
 void setup() {
   // initialize serial:
   Serial.begin(9600);
+
+  // set builtin LED to output
+  pinMode(LED_BUILTIN, OUTPUT);
+  //turn the built in LED on arduino on 
+  digitalWrite(LED_BUILTIN, HIGH);
   
   // wait for serial monitor to open:
   if (!Serial) delay(3000);
@@ -104,14 +105,14 @@ void setup() {
 void loop() {
   // if not connected to wifi, try again
   if (WiFi.status() != WL_CONNECTED) {
-    digitalWrite(wifiConnectedLED, HIGH); 
+    digitalWrite(LED_BUILTIN, HIGH); 
     WiFi.begin(SECRET_SSID, SECRET_PASS);
     delay(2000);
   }
   
   // if not connected to the broker, try to connect:
   if (!mqttClient.connected()) {
-    digitalWrite(mqttConnectedLED, LOW); 
+    digitalWrite(LED_BUILTIN, HIGH); 
     Serial.println("reconnecting");
     connectToBroker();
   }
@@ -131,7 +132,7 @@ void loop() {
    body.replace("hh", String(hh));
 
     mqttClient.println(body);
-//    Serial.println(body);
+    digitalWrite(LED_BUILTIN, LOW); 
     // send the message:
     mqttClient.endMessage();
     lastTimeSent = millis();
