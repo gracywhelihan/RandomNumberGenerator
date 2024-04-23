@@ -1,5 +1,5 @@
 {
-  "name": "mqtt-node-client",
+  "name": "random-number-generator",
   "version": "0.0.2",
   "description": "a node.js client for mqtt",
   "main": "mqtt-client.js",
@@ -11,9 +11,6 @@
   "engines": {
     "node": "12.x"
   },
-  "repository": {
-    "url": "https://glitch.com/edit/#!/tigoe-mqtt-client"
-  },
   "devDependencies": {},
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -23,6 +20,6 @@
     "mqtt",
     "node"
   ],
-  "author": "Tom Igoe",
+  "author": "Gracy Whelihan",
   "license": "ISC"
 }
