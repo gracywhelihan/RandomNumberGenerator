@@ -40,7 +40,7 @@ int port = 8883; // secure port for shiftr
 char topic[] = "incomingSensorData";
 // This part of the client id can be what ever you want
 // Later on in set up the last 3 digits of MAC Address are added to insure a unique client ID
-String clientID = "gwSHT31TempHumClient-";
+String clientID = "SHT31TempHumClient-";
 
 // last time the client sent a message, in ms:
 long lastTimeSent = 0;
