@@ -1,6 +1,6 @@
 /*
   This code demonstrates an MQTT arduino client that connects to a broker, subsrcibes to a topic,
-  and sends data from a KY-030 Micorphone Sound sensor.
+  and sends data from SHT31 Temperature and Humidity sensor.
   This code uses https://randomnumbergenerator.cloud.shiftr.io/ as the MQTT broker.
   To get the broker username and password please email vgw3869@nyu.edu
   the arduino_secrets.h file:
@@ -13,19 +13,15 @@
   Sourse code modified from code written by Tom Igoe https://github.com/tigoe/mqtt-examples/blob/main/arduino-clients/ArduinoMqttClient/ArduinoMqttClient.ino
 */
 
-
 // include libraries
 #include <WiFiNINA.h>
 #include <ArduinoMqttClient.h>
 #include <Wire.h>
-
+// include the SHT31 temperature and humidity library
+#include "Adafruit_SHT31.h"
 // include the secrets file with the wifi name and password and the broker name and passwork
 #include "secrets.h"
 
-
-//initialize sound sensor pins
-int soundPin = A0;  
-int sensorValue = 0;
 
 // initialize WiFi connection:
 WiFiSSLClient wifi; // secure wifi client
@@ -41,11 +37,12 @@ int port = 8883; // secure port for shiftr
 char topic[] = "incomingSensorData";
 // This part of the client id can be what ever you want
 // Later on in set up the last 3 digits of MAC Address are added to insure a unique client ID
-String clientID = "KY-030MicSoundSensorClient-";
+String clientID = "client-";
 
 // last time the client sent a message, in ms:
 long lastTimeSent = 0;
 // message sending interval:
+// sending a message every second
 int interval = 1000;
 
 
@@ -83,13 +80,13 @@ void setup() {
   // login to the broker with a username and password for randomnumbergenerator.cloud.shiftr.io:
   mqttClient.setUsernamePassword(SECRET_MQTT_USER, SECRET_MQTT_PASS);
 
+
   // try to connect to the MQTT broker once you're connected to WiFi:
   while (!connectToBroker()) {
     Serial.println("attempting to connect to broker");
     delay(1000);
   }
   Serial.println("Connected to randomnumbergenerator broker.");
-
 }
 
 void loop() {
@@ -111,19 +108,22 @@ void loop() {
   if (millis() - lastTimeSent > interval) {
     // start a new message on the topic:
     mqttClient.beginMessage(topic);
-    // save the sound sensor reading in the variable ss
-    float ss = analogRead(soundPin);
-    // create the message string
-    String body = "{\"sound\": ss}";
-    body.replace("ss", String(ss));
-    // send the message to the broker
+    // read the sensor data of your choice here
+    // as a placeholder randomn(300) is being used here
+    float rr = random(300);
+
+
+  String body = "{\"reading\": rr}";
+   body.replace("rr", String(rr));
+  
+  // send the message to the mqttBroker
     mqttClient.println(body);
-    // keep the indicator LED_BUILTIN LOW when messages are sending
-    digitalWrite(LED_BUILTIN, LOW);
+
+    // keeps the indicator LED_BUILTIN off when sending messages
+    digitalWrite(LED_BUILTIN, LOW); 
     // send the message:
     mqttClient.endMessage();
     lastTimeSent = millis();
-
   }
 
 }

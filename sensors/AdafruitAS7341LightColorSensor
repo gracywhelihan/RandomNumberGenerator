@@ -152,13 +152,12 @@ void loop() {
     colorChannel++;    
     // set up the message as a sting
     String body = "{\"color\": cc}";
-    // String body = "{\"message\":{\"client\": clientId, \"color\": cc}";
-    // replace 'll' with the value fo the sensor as a string
+    // replace 'cc' with the value fo the sensor as a string
    body.replace("cc", String(cc));
-  //  body.replace("clientId", clientID);
 
-    // add a random number as a numeric string (print(), not write()):
+    // send message to broker
     mqttClient.println(body);
+     // keep the indicator LED_BUILTIN LOW when messages are sending
     digitalWrite(LED_BUILTIN, LOW);
     // send the message:
     mqttClient.endMessage();

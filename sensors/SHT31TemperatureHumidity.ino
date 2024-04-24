@@ -116,16 +116,15 @@ void loop() {
   if (millis() - lastTimeSent > interval) {
     // start a new message on the topic:
     mqttClient.beginMessage(topic);
-    // add a random number as a numeric string (print(), not write()):
+    // read the temperature and humidity
     float tt = sht31.readTemperature();
     float hh = sht31.readHumidity();
 
-
+  // create the message body string
   String body = "{\"temp\": tt, \"hum\": hh}";
-  //String body = "{\"sound\": ss, \"time\": dd}";
    body.replace("tt", String(tt));
    body.replace("hh", String(hh));
-
+    // send the message to broker
     mqttClient.println(body);
     digitalWrite(LED_BUILTIN, LOW); 
     // send the message:

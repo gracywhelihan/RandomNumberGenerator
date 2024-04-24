@@ -120,12 +120,11 @@ void loop() {
     String body = "{\"light\": ll}";
     // replace 'll' with the value fo the sensor as a string
    body.replace("ll", String(ll));
-
-    // add a random number as a numeric string (print(), not write()):
+  // send the message:
     mqttClient.println(body);
-
-    // send the message:
+    // end the message:
     mqttClient.endMessage();
+     // keep the indicator LED_BUILTIN LOW when messages are sending
     lastTimeSent = millis();
     digitalWrite(LED_BUILTIN, LOW);
 
