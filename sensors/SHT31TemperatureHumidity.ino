@@ -69,7 +69,6 @@ void setup() {
   }
 
   // print when connected to wifi
-  digitalWrite(wifiConnectedLED, HIGH); 
   Serial.println("Connected to wifi.");
 
   // make the clientID unique by adding the last three digits of the MAC address:
@@ -83,10 +82,6 @@ void setup() {
   // login to the broker with a username and password for randomnumbergenerator.cloud.shiftr.io:
   mqttClient.setUsernamePassword(SECRET_MQTT_USER, SECRET_MQTT_PASS);
 
-  // set the credentials for the MQTT client:
-    mqttClient.setId(clientID);
-  // login to the broker with a username and password:
-    mqttClient.setUsernamePassword(SECRET_MQTT_USER, SECRET_MQTT_PASS);
 
   // try to connect to the MQTT broker once you're connected to WiFi:
   while (!connectToBroker()) {
@@ -151,6 +146,5 @@ boolean connectToBroker() {
   }
   // once you're connected, you
   // return that you're connected:
-  digitalWrite(mqttConnectedLED, HIGH);    // turn on the yellow LED 
   return true;
 }

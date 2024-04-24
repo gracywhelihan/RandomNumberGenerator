@@ -50,10 +50,7 @@ int colorChannel = 1;
 void setup() {
   // initialize serial:
   Serial.begin(9600);
-
-  // set builtin LED to output
   pinMode(LED_BUILTIN, OUTPUT);
-  //turn the built in LED on arduino on 
   digitalWrite(LED_BUILTIN, HIGH);
   // wait for serial monitor to open:
   if (!Serial) delay(3000);
@@ -79,11 +76,6 @@ void setup() {
   mqttClient.setId(clientID);
   // login to the broker with a username and password for randomnumbergenerator.cloud.shiftr.io:
   mqttClient.setUsernamePassword(SECRET_MQTT_USER, SECRET_MQTT_PASS);
-
-  // set the credentials for the MQTT client:
-    mqttClient.setId(clientID);
-  // login to the broker with a username and password:
-    mqttClient.setUsernamePassword(SECRET_MQTT_USER, SECRET_MQTT_PASS);
 
   // try to connect to the MQTT broker once you're connected to WiFi:
   while (!connectToBroker()) {
@@ -160,16 +152,17 @@ void loop() {
     colorChannel++;    
     // set up the message as a sting
     String body = "{\"color\": cc}";
+    // String body = "{\"message\":{\"client\": clientId, \"color\": cc}";
     // replace 'll' with the value fo the sensor as a string
-   body.replace("ll", String(cc));
+   body.replace("cc", String(cc));
+  //  body.replace("clientId", clientID);
 
     // add a random number as a numeric string (print(), not write()):
     mqttClient.println(body);
-
+    digitalWrite(LED_BUILTIN, LOW);
     // send the message:
     mqttClient.endMessage();
     lastTimeSent = millis();
-    digitalWrite(LED_BUILTIN, LOW);
   }
 
 }
