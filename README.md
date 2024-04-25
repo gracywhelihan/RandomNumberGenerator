@@ -2,7 +2,7 @@
 
 This project was created by Gracy Whelihan as a graduate thesis project at NYU's ITP program. It aims to generate pseudo-random numbers that approach the elusive quality of true randomness. The process involves utilizing environmental sensors to collect real-time data and a algorithm, merging the organic and the digital to produce outcomes that escape predictability. 
 
-This repo contains source code for a few different sensors that contribute to the random number generator.
+This repo contains source code for a few different sensors that contribute to the random number generator. As well as a boiler plate publishing Arduino client, and a boiler plate subscribing Arduino client.
 
 Currently the algorithm code is being hosted [here](https://5695152282714844.glitch.me/). 
 
