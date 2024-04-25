@@ -2,4 +2,4 @@ Code for Adruino and JS clients that subscribe to the randomnumbergenerator brok
 
 NOTE: The number that is generated is a number between 0 and 1.
 
-JS client can also be remixed on [Glitch.com](https://glitch.com/) [here](https://glitch.com/edit/#!/prng-js-client)
+JS client code can also be viewed on [Glitch.com](https://glitch.com/) and can be remixed for your own project [here](https://glitch.com/edit/#!/prng-js-client).
