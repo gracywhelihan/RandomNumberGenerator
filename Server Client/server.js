@@ -39,8 +39,8 @@ let options = {
   // Authentication
   clientId: "nodeClient",
   // add these in for public.cloud.shiftr.io:
-  username: "randomnumbergenerator",
-  password: "UKspKVF8tgbjf7uA",
+  username: "",
+  password: "",
 };
 
 // topic and message payload:
