@@ -117,7 +117,7 @@ void loop() {
     float ll = RawToLux(rawVal);
 
     // set up the message as a sting
-    String body = "{\"light\": ll}";
+    String body = "{\"id\": \"" + String(clientID) + "\", \"light\": ll}";
     // replace 'll' with the value fo the sensor as a string
    body.replace("ll", String(ll));
   // send the message:
@@ -136,7 +136,7 @@ boolean connectToBroker() {
   // if the MQTT client is not connected:
   if (!mqttClient.connect(broker, port)) {
     // print out the error message:
-    Serial.print("MOTT connection failed. Error no: ");
+    Serial.print("MQTT connection failed. Error no: ");
     Serial.println(mqttClient.connectError());
     // return that you're not connected:
     return false;
