@@ -121,7 +121,7 @@ void loop() {
     float hh = sht31.readHumidity();
 
   // create the message body string
-  String body = "{\"temp\": tt, \"hum\": hh}";
+  String body = "{\"id\": \"" + String(clientID) + "\", \"temp\": tt, \"hum\": hh}";
    body.replace("tt", String(tt));
    body.replace("hh", String(hh));
     // send the message to broker
@@ -138,7 +138,7 @@ boolean connectToBroker() {
   // if the MQTT client is not connected:
   if (!mqttClient.connect(broker, port)) {
     // print out the error message:
-    Serial.print("MOTT connection failed. Error no: ");
+    Serial.print("MQTT connection failed. Error no: ");
     Serial.println(mqttClient.connectError());
     // return that you're not connected:
     return false;
