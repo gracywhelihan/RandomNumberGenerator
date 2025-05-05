@@ -29,8 +29,8 @@ let options = {
   clean: true,
   connectTimeout: 10000,
   clientId: "nodeClient",
-  username: "randomnumbergenerator",
-  password: "UKspKVF8tgbjf7uA",
+  username: "", // username of the broker
+  password: "", // password for the broker
 };
 
 // topic and message payload
